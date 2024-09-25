@@ -22,5 +22,5 @@ variable "s3_acl" {
 variable "aws_region" {
   type = string
   description = "region"
-  default = "us-east-1"
+  default = "us-east-2"
 }
