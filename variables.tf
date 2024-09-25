@@ -1,6 +1,7 @@
 variable "s3_bucket_name" {
   type = string
   description = "S3 bucket unique name to be assigned"
+  default = "radu-spin-s3"
 }
 
 variable "tags" {
@@ -15,9 +16,11 @@ variable "tags" {
 variable "s3_acl" {
   type = string
   description = "S3 public or private access"
+  default = "private"
 }
 
 variable "aws_region" {
   type = string
   description = "region"
+  default = "us-east-1"
 }
