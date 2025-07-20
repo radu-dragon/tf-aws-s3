@@ -6,7 +6,7 @@ variable "s3_bucket_name" {
 
 variable "tags" {
   type        = map(string)
-  description = "(Optional) A mapping of tags to assign to the bucket."
+  description = "(Optional) A mapping of tags to assign to the bucket. TEST"
   default     = {
     tag_name = "Radu Dragon TF Test"
     environment = "development"
