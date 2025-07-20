@@ -8,7 +8,7 @@ variable "tags" {
   type        = map(string)
   description = "(Optional) A mapping of tags to assign to the bucket."
   default     = {
-    tag_name = "Radu Dragon TF Test"
+    tag_name = "Radu Dragon TF Test 2"
     environment = "development"
   }
 }
