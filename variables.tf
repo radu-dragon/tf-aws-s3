@@ -1,6 +1,6 @@
 variable "s3_bucket_name" {
   type = string
-  description = "S3 bucket unique name to be assigned to"
+  description = "S3 bucket unique name to be assigned for"
   default = "radu-spin-s3"
 }
 
