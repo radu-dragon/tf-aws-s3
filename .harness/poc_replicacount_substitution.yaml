@@ -1,0 +1,77 @@
+pipeline:
+  name: poc_replicacount_substitution
+  identifier: poc_replicacount_substitution
+  projectIdentifier: GitOps_Demo
+  orgIdentifier: default
+  tags: {}
+  variables:
+    - name: replicaCount
+      type: String
+      description: "Value substituted into values.yaml and pushed to git"
+      required: true
+      value: "4"
+  stages:
+    - stage:
+        name: Substitute And Push
+        identifier: Substitute_And_Push
+        type: Custom
+        spec:
+          execution:
+            steps:
+              - step:
+                  name: Render And Push Manifest
+                  identifier: Render_And_Push_Manifest
+                  type: ShellScript
+                  timeout: 10m
+                  spec:
+                    shell: Bash
+                    onDelegate: true
+                    delegateSelectors:
+                      - helm-delegate
+                    source:
+                      type: Inline
+                      spec:
+                        script: |
+                          set -euo pipefail
+
+                          REPLICA_COUNT="<+pipeline.variables.replicaCount>"
+                          REPO="radu-dragon/gitops-manifests"
+                          BRANCH="main"
+                          FILE="values.yaml"
+                          PAT="<+secrets.getValue('account.gha_pat')>"
+
+                          echo "Substituting replicaCount=${REPLICA_COUNT} into ${FILE}"
+
+                          WORKDIR="$(mktemp -d)"
+                          cd "${WORKDIR}"
+
+                          git clone --depth 1 --branch "${BRANCH}" \
+                            "https://radu-dragon:${PAT}@github.com/${REPO}.git" repo
+                          cd repo
+
+                          # Render the manifest: replace the whole replicaCount line
+                          # whether it holds the placeholder or a prior value.
+                          if grep -qE '^[[:space:]]*replicaCount:' "${FILE}"; then
+                            sed -i -E "s|^([[:space:]]*replicaCount:).*|\1 ${REPLICA_COUNT}|" "${FILE}"
+                          else
+                            echo "replicaCount: ${REPLICA_COUNT}" >> "${FILE}"
+                          fi
+
+                          echo "----- rendered ${FILE} -----"
+                          cat "${FILE}"
+                          echo "-----------------------------"
+
+                          git config user.email "harness-poc@example.com"
+                          git config user.name "Harness PoC Pipeline"
+
+                          if git diff --quiet; then
+                            echo "No change to commit (value already ${REPLICA_COUNT})."
+                          else
+                            git add "${FILE}"
+                            git commit -m "PoC: set replicaCount=${REPLICA_COUNT} via Harness pipeline"
+                            git push origin "${BRANCH}"
+                            echo "Pushed replicaCount=${REPLICA_COUNT} to ${REPO}@${BRANCH}"
+                          fi
+                    environmentVariables: []
+                    outputVariables: []
+        tags: {}
